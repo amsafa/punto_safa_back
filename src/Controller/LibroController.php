@@ -317,43 +317,68 @@ class LibroController extends AbstractController
         LibroRepository $libroRepository,
         CategoriaRepository $categoriaRepository
     ): JsonResponse {
-        $categoryId = $request->query->get('categoryId'); // Obtener ID de la categoría
-        $priceRanges = $request->query->get('priceRanges'); // Obtener rangos de precios como cadena
-        $page = (int) $request->query->get('page', 1);
-        $limit = (int) $request->query->get('limit', 9);
+        $categoryIds = $request->query->get('categoryId', ''); // Obtener IDs de las categorías como cadena
+        $priceRanges = $request->query->get('priceRanges', ''); // Obtener rangos de precios como cadena
+        $page = max(1, (int) $request->query->get('page', 1)); // Asegurar que sea al menos 1
+        $limit = max(1, (int) $request->query->get('limit', 9)); // Asegurar que sea al menos 1
 
-        $minPrice = null;
-        $maxPrice = null;
+        $queryBuilder = $libroRepository->createQueryBuilder('l');
 
-        if($priceRanges){
-            switch ($priceRanges) {
-                case 'menor5':
-                    $minPrice = 0;
-                    $maxPrice = 5;
-                    break;
-                case "5-10":
-                    $minPrice = 5;
-                    $maxPrice = 10;
-                    break;
-                case "10-15":
-                    $minPrice = 10;
-                    $maxPrice = 15;
-                    break;
-                case "15-40":
-                    $minPrice = 15;
-                    $maxPrice = 40;
-                    break;
-                case "mayor40":
-                    $minPrice = 40;
-                    $maxPrice = 9999;
-                    break;
-            }
+        // Filtrar por categoría si se proporciona
+        if (!empty($categoryIds)) {
+            $categoryIds = explode(',', $categoryIds); // Convertir la cadena en un array
+            $queryBuilder->andWhere('l.categoria IN (:categoryIds)')
+                ->setParameter('categoryIds', $categoryIds);
         }
 
-        $libros = $libroRepository->findLibrosByFiltro($categoryId, $minPrice, $maxPrice);
+        // Filtrar por rangos de precios si se proporcionan
+        if (!empty($priceRanges)) {
+            $priceArray = explode(',', $priceRanges);
+            $orX = $queryBuilder->expr()->orX();
 
+            foreach ($priceArray as $range) {
+                switch ($range) {
+                    case 'menor5':
+                        $orX->add('l.precio < 5');
+                        break;
+                    case '5-10':
+                        $orX->add('l.precio BETWEEN 5 AND 10');
+                        break;
+                    case '10-15':
+                        $orX->add('l.precio BETWEEN 10 AND 15');
+                        break;
+                    case '15-40':
+                        $orX->add('l.precio BETWEEN 15 AND 40');
+                        break;
+                    case 'mayor40':
+                        $orX->add('l.precio > 40');
+                        break;
+                }
+            }
+            $queryBuilder->andWhere($orX);
+        }
 
-        return $this->json($libros, Response::HTTP_OK, []);
+        // Paginación
+        $queryBuilder->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
+
+        $libros = $queryBuilder->getQuery()->getResult();
+
+        // Calcular el total de resultados para la paginación
+        $totalLibros = $libroRepository->createQueryBuilder('l')
+            ->select('COUNT(l.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $this->json([
+            'libros' => $libros,
+            'pagination' => [
+                'page' => $page,
+                'limit' => $limit,
+                'total' => $totalLibros,
+                'totalPages' => ceil($totalLibros / $limit),
+            ],
+        ], Response::HTTP_OK);
     }
 
 
