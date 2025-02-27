@@ -90,4 +90,25 @@ class ClienteRepository extends ServiceEntityRepository
 
 
 
+    // ClienteRepository.php
+    public function findOneByUsuario(Usuario $usuario): ?Cliente
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.usuario = :usuario')
+            ->setParameter('usuario', $usuario)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+    // UsuarioRepository.php
+    public function findOneByUsername(string $username): ?Usuario
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.username = :username')
+            ->setParameter('username', $username)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+
+
 }

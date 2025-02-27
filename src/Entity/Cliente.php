@@ -3,8 +3,10 @@
 namespace App\Entity;
 
 use App\Repository\ClienteRepository;
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
 
 
 #[ORM\Entity(repositoryClass: ClienteRepository::class)]
@@ -13,11 +15,12 @@ class Cliente
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(name: "id", type: Types::INTEGER)]
     private ?int $id = null;
 
     #[ORM\Column(name: "nombre", type: Types::STRING, length: 100)]
     private ?string $nombre = null;
+
     #[ORM\Column(name: "apellidos", type: Types::STRING, length: 100)]
     private ?string $apellidos = null;
 
@@ -33,17 +36,24 @@ class Cliente
     #[ORM\Column(name: "telefono", type: Types::STRING, length: 100)]
     private ?string $telefono = null;
 
-    #[ORM\ManyToOne(targetEntity: Usuario::class, fetch: "EAGER")]
-    #[ORM\JoinColumn(name: "id_usuario", referencedColumnName: "id", nullable: false)]
+    #[ORM\OneToOne(targetEntity: Usuario::class)]
+    #[ORM\JoinColumn(name: 'id_usuario', referencedColumnName: 'id', nullable: false)]
     private ?Usuario $usuario = null;
 
+    #[ORM\OneToMany(targetEntity: Pedido::class, mappedBy: 'cliente')]
+    private Collection $pedidos;
 
-     
+    public function __construct()
+    {
+        $this->pedidos = new ArrayCollection();
+    }
+
+
     public function getId(): ?int
     {
         return $this->id;
     }
-     
+
     public function getNombre(): ?string
     {
         return $this->nombre;
@@ -56,8 +66,6 @@ class Cliente
         return $this;
     }
 
-
-     
     public function getApellidos(): ?string
     {
         return $this->apellidos;
@@ -66,10 +74,9 @@ class Cliente
     public function setApellidos(string $apellidos): static
     {
         $this->apellidos = $apellidos;
-
         return $this;
     }
-     
+
     public function getDNI(): ?string
     {
         return $this->DNI;
@@ -81,7 +88,7 @@ class Cliente
 
         return $this;
     }
-     
+
     public function getFoto(): ?string
     {
         return $this->foto;
@@ -93,7 +100,7 @@ class Cliente
 
         return $this;
     }
-     
+
     public function getDireccion(): ?string
     {
         return $this->direccion;
@@ -105,7 +112,7 @@ class Cliente
 
         return $this;
     }
-     
+
     public function getTelefono(): ?string
     {
         return $this->telefono;
@@ -118,7 +125,7 @@ class Cliente
         return $this;
     }
 
-     
+
     public function getUsuario(): ?Usuario
     {
         return $this->usuario;
@@ -127,6 +134,33 @@ class Cliente
     public function setUsuario(Usuario $usuario): static
     {
         $this->usuario = $usuario;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Pedido>
+     */
+    public function getPedidos(): Collection
+    {
+        return $this->pedidos;
+    }
+
+    public function addPedido(Pedido $pedido): self
+    {
+        if (!$this->pedidos->contains($pedido)) {
+            $this->pedidos[] = $pedido;
+            $pedido->setCliente($this);
+        }
+        return $this;
+    }
+
+    public function removePedido(Pedido $pedido): self
+    {
+        if ($this->pedidos->removeElement($pedido)) {
+            if ($pedido->getCliente() === $this) {
+                $pedido->setCliente(null);
+            }
+        }
         return $this;
     }
 }
