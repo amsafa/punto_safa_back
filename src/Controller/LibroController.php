@@ -257,26 +257,33 @@ class LibroController extends AbstractController
 
 
     #[Route('/categoria/{id}', name: 'libros_by_categoria', methods: ['GET'])]
-    public function getLibrosByCategoria(LibroRepository $libroRepository, CategoriaRepository $categoriaRepository ,string $id): JsonResponse{
-
-
+    public function getLibrosByCategoria(
+        Request $request,
+        LibroRepository $libroRepository,
+        CategoriaRepository $categoriaRepository,
+        string $id
+    ): JsonResponse {
         $categoria = $categoriaRepository->find($id);
-
-
-        if(!$categoria){
+        if (!$categoria) {
             return new JsonResponse(['error' => 'Categoría no encontrada'], Response::HTTP_NOT_FOUND);
         }
 
+        // Obtener parámetros de paginación
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = max(1, (int) $request->query->get('limit', 9));
+        $offset = ($page - 1) * $limit;
 
-        $libros = $libroRepository->findBy(['categoria' => $categoria]);
-
-
-
+        // Obtener libros con paginación
+        $libros = $libroRepository->findBy(
+            ['categoria' => $categoria],
+            null, // Sin orden específico
+            $limit,
+            $offset
+        );
 
         return $this->json($libros, Response::HTTP_OK, []);
-
-
     }
+
 
 
     #[Route('/search', name: 'search_libros', methods: ['GET'])]
