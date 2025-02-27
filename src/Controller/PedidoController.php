@@ -44,7 +44,7 @@ final class PedidoController extends AbstractController
         $pedido->setCliente($cliente);
         $pedido->setTotal($json_pedido['total']);
         $pedido->setEstado($json_pedido['estado']);
-        $pedido->SetDireccionEntrega($json_pedido['direccion']);
+        $pedido->SetDireccionEntrega($json_pedido['direccion_entrega']);
         $entityManager->persist($pedido);
         $entityManager->flush();
 
