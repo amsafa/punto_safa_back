@@ -1,13 +1,13 @@
 <?php
 
+
 namespace App\Entity;
 
 use App\Repository\ClienteRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: ClienteRepository::class)]
 #[ORM\Table(name: "cliente", schema: "puntosafa")]
@@ -41,13 +41,13 @@ class Cliente
     private ?Usuario $usuario = null;
 
     #[ORM\OneToMany(targetEntity: Pedido::class, mappedBy: 'cliente')]
+    #[Groups(['cliente:read'])] // Asegúrate de que este grupo esté definido
     private Collection $pedidos;
 
     public function __construct()
     {
         $this->pedidos = new ArrayCollection();
     }
-
 
     public function getId(): ?int
     {
@@ -62,7 +62,6 @@ class Cliente
     public function setNombre(string $nombre): static
     {
         $this->nombre = $nombre;
-
         return $this;
     }
 
@@ -85,7 +84,6 @@ class Cliente
     public function setDNI(string $DNI): static
     {
         $this->DNI = $DNI;
-
         return $this;
     }
 
@@ -97,7 +95,6 @@ class Cliente
     public function setFoto(string $foto): static
     {
         $this->foto = $foto;
-
         return $this;
     }
 
@@ -109,7 +106,6 @@ class Cliente
     public function setDireccion(string $direccion): static
     {
         $this->direccion = $direccion;
-
         return $this;
     }
 
@@ -121,10 +117,8 @@ class Cliente
     public function setTelefono(string $telefono): static
     {
         $this->telefono = $telefono;
-
         return $this;
     }
-
 
     public function getUsuario(): ?Usuario
     {

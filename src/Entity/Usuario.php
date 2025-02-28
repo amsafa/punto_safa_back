@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
+
 #[ORM\Entity(repositoryClass: UsuarioRepository::class)]
 #[ORM\Table(name: "usuario", schema: "puntosafa")]
 class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
@@ -34,8 +35,9 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
     private ?Cliente $cliente = null;
 
 
-    // Campo en memoria para el token de activación, no persistido en la base de datos
-    private ?string $activationToken = null;
+
+
+
 
 
     public function getCliente(): ?Cliente
@@ -157,17 +159,6 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    // Métodos para el token de activación (solo en memoria, no persistido en la DB)
-    public function getActivationToken(): ?string
-    {
-        return $this->activationToken;
-    }
-
-    public function setActivationToken(?string $activationToken): static
-    {
-        $this->activationToken = $activationToken;
-        return $this;
-    }
 
 
     public function eraseCredentials(): void
