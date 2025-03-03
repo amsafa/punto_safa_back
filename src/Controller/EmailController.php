@@ -104,38 +104,59 @@ class EmailController extends AbstractController
         return $this->json(['mensaje' => 'Si el correo existe, se ha enviado un enlace de recuperación.'], 200);
     }
 
-    #[Route('/api/restablecer-contrasena/{token}', name: 'restablecer_contrasena', methods: ['POST'])]
-    public function restablecerContrasena(Request $request, $token, UsuarioRepository $userRepository, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
-    {
-        // Buscar al usuario con el token
-        $user = $userRepository->findOneBy(['resetToken' => $token]);
 
-        if (!$user) {
-            // Si no se encuentra el usuario, devolver un error
-            return $this->json(['error' => 'Token inválido'], Response::HTTP_BAD_REQUEST);
-        }
-
-        // Obtener la nueva contraseña del cuerpo de la solicitud
-        $newPassword = $request->request->get('contraseña');
-
-        if (!$newPassword) {
-            // Si no se pasa la nueva contraseña, retornar un error
-            return $this->json(['error' => 'El campo contraseña es obligatorio'], Response::HTTP_BAD_REQUEST);
-        }
-
-        // Hash de la nueva contraseña antes de guardarla
-        $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
-
-        // Actualizar la contraseña del usuario con la nueva contraseña
-        $user->setPassword($hashedPassword);
-
-        // Guardar los cambios en la base de datos
-        $entityManager->flush();
-
-        return $this->json(['message' => 'Contraseña restablecida con éxito']);
-    }
-
-
+//    #[Route('/api/verificar-token/{token}', name: 'verificar_token', methods: ['GET'])]
+//    public function verificarToken(string $token, EntityManagerInterface $entityManager): JsonResponse
+//    {
+//        $usuario = $entityManager->getRepository(Usuario::class)->findOneBy(['token' => $token]);
+//
+//        if (!$usuario) {
+//            return $this->json(['error' => 'Token inválido o expirado'], 400);
+//        }
+//
+//        return $this->json(['mensaje' => 'Token válido'], 200);
+//    }
+//
+//    #[Route('/api/restablecer-contrasena/{token}', name: 'restablecer_contrasena', methods: ['GET'])]
+//    public function restablecerContrasena(
+//        Request $request,
+//        string $token,
+//        UsuarioRepository $userRepository,
+//        EntityManagerInterface $entityManager,
+//        UserPasswordHasherInterface $passwordHasher
+//    ): Response {
+//        // Buscar al usuario con el token
+//        $user = $userRepository->findOneBy(['resetToken' => $token]);
+//
+//        if (!$user) {
+//            // Si no se encuentra el usuario, devolver un error
+//            return $this->json(['error' => 'Token inválido'], Response::HTTP_BAD_REQUEST);
+//        }
+//
+//        // Obtener la nueva contraseña del cuerpo de la solicitud
+//        $newPassword = $request->request->get('contraseña');
+//
+//        if (!$newPassword) {
+//            // Si no se pasa la nueva contraseña, retornar un error
+//            return $this->json(['error' => 'El campo contraseña es obligatorio'], Response::HTTP_BAD_REQUEST);
+//        }
+//
+//        // Hashear la nueva contraseña antes de guardarla
+//        $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
+//
+//        // Actualizar la contraseña del usuario con la nueva contraseña
+//        $user->setPassword($hashedPassword);
+//
+//        // **Limpiar el token de restablecimiento**
+//        $user->setResetToken(null);
+//
+//        // Guardar los cambios en la base de datos
+//        $entityManager->flush();
+//
+//        return $this->json(['message' => 'Contraseña restablecida con éxito']);
+//    }
+//
+//
 
 
 }
